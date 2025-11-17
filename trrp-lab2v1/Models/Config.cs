@@ -31,6 +31,7 @@ namespace TVShowsTransfer.Models
     {
         public string Host { get; set; } = "localhost";
         public int Port { get; set; } = 8888;
+        public string Mode { get; set; } = "sender";
     }
 
     public class RabbitMQConfig

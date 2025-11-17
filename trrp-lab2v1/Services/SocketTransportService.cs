@@ -21,11 +21,22 @@ namespace TVShowsTransfer.Services
         {
             try
             {
-                _tcpClient = new TcpClient();
-                await _tcpClient.ConnectAsync(_config.Host, _config.Port);
-                _stream = _tcpClient.GetStream();
-                Console.WriteLine($"Connected to {_config.Host}:{_config.Port}");
-                return true;
+                if (_config.Mode == "receiver")  // Add mode detection
+                {
+                    // Receiver code - listen for connections
+                    var _listener = new TcpListener(System.Net.IPAddress.Parse(_config.Host), _config.Port);
+                    _listener.Start();
+                    var _client = await _listener.AcceptTcpClientAsync();
+                    _stream = _client.GetStream();
+                    return true;
+                } else
+                {
+                    _tcpClient = new TcpClient();
+                    await _tcpClient.ConnectAsync(_config.Host, _config.Port);
+                    _stream = _tcpClient.GetStream();
+                    Console.WriteLine($"Connected to {_config.Host}:{_config.Port}");
+                    return true;
+                }
             }
             catch (Exception ex)
             {
