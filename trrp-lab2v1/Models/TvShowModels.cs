@@ -106,6 +106,15 @@
                 }
             }
         }
+
+        public void RemoveData()
+        {
+            TvShows.Clear();
+            Episodes.Clear();
+            Actors.Clear();
+            Characters.Clear();
+            M2MEpisodeCharacters.Clear();
+        }
     }
 
     public class TvShow

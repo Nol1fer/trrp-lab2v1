@@ -12,12 +12,12 @@ namespace TVShowsTransfer.Data
             _connectionString = connectionString;
         }
 
-        public async Task SaveNormalizedDataAsync(DataNormalizer normalizer)
+        public async Task DropAndCreateTables()
         {
             using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync();
-
             using var transaction = await connection.BeginTransactionAsync();
+
             try
             {
                 var cmd = connection.CreateCommand();
@@ -80,7 +80,27 @@ namespace TVShowsTransfer.Data
                 );
             ";
                 cmd.ExecuteNonQuery();
+                await transaction.CommitAsync();
+
                 Console.WriteLine("Created tables.");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                Console.WriteLine($"Save failed: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task SaveNormalizedDataAsync(DataNormalizer normalizer)
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            using var transaction = await connection.BeginTransactionAsync();
+            try
+            {
+                var cmd = connection.CreateCommand();
 
                 foreach (var tvShow in normalizer.TvShows)
                 {

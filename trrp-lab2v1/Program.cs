@@ -88,6 +88,8 @@ static async Task RunReceiverMode(AppConfig config, ITransportService transport)
     var normalizer = new DataNormalizer();
     var receivedCount = 0;
 
+    await writer.DropAndCreateTables();
+
     Console.WriteLine("Waiting for messages...");
 
     if (transport is RabbitMQTransportService rabbitMqService)
@@ -127,12 +129,13 @@ static async Task ProcessMessage(Message message, PostgreSQLWriter writer, DataN
             var batch = System.Text.Json.JsonSerializer.Deserialize<List<DenormalizedTvShow>>(message.Data)!;
             normalizer.NormalizeData(batch);
             receivedCount += batch.Count;
+            await writer.SaveNormalizedDataAsync(normalizer);
+            normalizer.RemoveData();
             Console.WriteLine($"Received batch. Total: {receivedCount}");
         }
         else if (message.Type == "complete")
         {
             Console.WriteLine($"All data received! Total: {message.TotalCount} records");
-            await writer.SaveNormalizedDataAsync(normalizer);
         }
     }
     catch (Exception ex)
